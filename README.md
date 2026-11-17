@@ -49,15 +49,17 @@ The sample instruction: *"Replace '23%' with '25%' in the executive summary."*
 
 ## Testing
 
+Verification has two layers: automated unit tests for document integrity, and end-to-end runs of the full AI agent against a real `.docx` file with visual before/after checks.
+
+### Unit tests
+
 ```bash
 # Unit tests — no API key needed
-pytest tests/ -v
+pytest tests/ -v -m "not integration"
 
 # Integration tests — requires GOOGLE_API_KEY in .env
 pytest tests/ -v -m integration
 ```
-
-### Formatting preservation verification
 
 Unit tests confirm that:
 
@@ -66,6 +68,66 @@ Unit tests confirm that:
 - **Cross-run edits**: text spanning multiple runs is replaced correctly, keeping the first run's formatting
 - **Table integrity**: table cell contents remain unchanged when only paragraph text is modified
 - **Structure**: paragraph and table counts change only when the edit explicitly requires it
+
+### End-to-end agent verification
+
+To verify that the AI agent correctly interprets natural-language instructions and that content/formatting outside the requested edit remain intact, all three core operations were run against `samples/sample_input.docx`. Each run:
+
+1. Printed the document structure, edit plan, and execution log (`-v`)
+2. Reported built-in validation as **PASSED**
+3. Was checked visually in Pages: original vs `samples/sample_input_edited.docx`
+
+**Starting state** — only the input sample exists; no edited output yet:
+
+![Before — no edited file](assets/1.png)
+
+#### Replace
+
+```bash
+python3 main.py -v samples/sample_input.docx "Replace '23%' with '25%'"
+```
+
+The agent planned a single `replace`. Validation **PASSED**. Only the targeted percentage changed; headings, table, and surrounding formatting stayed intact.
+
+Terminal (plan + validation):
+
+![Replace — terminal](assets/2.png)
+
+Document (left: original `23%`, right: edited `25%`):
+
+![Replace — document before/after](assets/3.png)
+
+#### Remove
+
+```bash
+python3 main.py -v samples/sample_input.docx "Remove the paragraph about client satisfaction"
+```
+
+The agent removed the client-satisfaction paragraph. Executive Summary, Key Metrics table, and Next Steps remained unchanged.
+
+Terminal (plan + validation):
+
+![Remove — terminal](assets/4.png)
+
+Document (left: paragraph present, right: paragraph removed):
+
+![Remove — document before/after](assets/5.png)
+
+#### Insert
+
+```bash
+python3 main.py -v samples/sample_input.docx "Add a paragraph 'Goals for Q1 2026' after the executive summary"
+```
+
+The agent inserted the new paragraph after the Executive Summary section and before Key Metrics. Existing content and formatting were preserved.
+
+Terminal (plan + validation):
+
+![Insert — terminal](assets/6.png)
+
+Document (left: original, right: new paragraph circled):
+
+![Insert — document before/after](assets/7.png)
 
 ## Key decisions
 
