@@ -53,21 +53,35 @@ Verification has two layers: automated unit tests for document integrity, and en
 
 ### Unit tests
 
-```bash
-# Unit tests — no API key needed
-pytest tests/ -v -m "not integration"
+No API key required. Cover document analysis, replace/insert/remove, formatting preservation, and compare:
 
-# Integration tests — requires GOOGLE_API_KEY in .env
-pytest tests/ -v -m integration
+```bash
+pytest tests/ -v -m "not integration"
 ```
 
-Unit tests confirm that:
+**20 passed** — including preservation of untouched paragraphs, run-level bold/italic/underline, cross-run replacement, and table integrity:
+
+![Unit tests result](assets/tests_not_integration.png)
+
+What they confirm:
 
 - **Text integrity**: non-targeted paragraphs retain identical text after editing
 - **Run formatting**: bold, italic, and underline attributes are preserved on unchanged runs
 - **Cross-run edits**: text spanning multiple runs is replaced correctly, keeping the first run's formatting
 - **Table integrity**: table cell contents remain unchanged when only paragraph text is modified
 - **Structure**: paragraph and table counts change only when the edit explicitly requires it
+
+### Integration test
+
+Requires `GOOGLE_API_KEY` in `.env`. Runs the full LangGraph pipeline (Analyze → Plan → Execute → Validate) against a real LLM:
+
+```bash
+pytest tests/ -v -m integration
+```
+
+**1 passed** — `TestFullAgent::test_replace_flow` replaces `23%` → `25%` end-to-end and asserts the output document:
+
+![Integration test result](assets/test_integration.png)
 
 ### End-to-end agent verification
 
