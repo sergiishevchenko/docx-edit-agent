@@ -3,6 +3,7 @@
 import os
 from typing import TypedDict, Literal
 
+from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import StateGraph, END, START
@@ -10,6 +11,8 @@ from pydantic import BaseModel, Field
 from docx import Document
 
 from src.document import analyze, replace_text, insert_paragraph, remove_paragraph, compare
+
+load_dotenv()
 
 PLAN_PROMPT = """\
 You are a document editing planner. Analyze the document structure and the user's \
