@@ -1,5 +1,7 @@
 # AI-powered Word Document Editor
 
+> Technical case study / take-home assignment for **Olymp** (Full-Stack Software Engineer).
+
 A LangGraph-based AI agent that modifies Microsoft Word (.docx) documents in response to natural-language instructions.
 
 ## Architecture
